@@ -1,0 +1,22 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t rajathongal/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run rajathongal/react-test npm test -- --coverage
+
+after_sucess:
+    - docker build -t rajathongal/multi-client ./client
+    - docker build -t rajathongal/multi-nginx ./nginx
+    - docker build -t rajathongal/multi-server ./server
+    - docker build -t rajathongal/multi-worker ./worker 
+    #Log in to docker cli 
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    #Take thos images and push them to docker hub 
+    - docker push rajathongal/multi-client
+    - docker push rajathongal/multi-nginx
+    - docker push rajathongal/multi-server
+    - docker push rajathongal/multi-worker
